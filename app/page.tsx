@@ -58,6 +58,9 @@ export default function Home() {
 
   const handleStop = () => {
     setIsRolling(false);
+    if (soundEffect && audioRef.current) {
+      audioRef.current.play();
+    }
   };
 
   const toggleFullscreen = () => {
@@ -74,17 +77,35 @@ export default function Home() {
     }
   };
 
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.code === "Space") {
+        if (isRolling) {
+          handleStop();
+        } else {
+          handleStart();
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isRolling]);
+
+  const handleSave = () => {
+    setShowSidebar(false);
+  };
+
   return (
     <div
-      className={`flex ${
-        isFullscreen ? "fixed top-0 left-0 w-full h-full" : "min-h-screen"
-      } p-2`}
+      className={`flex ${isFullscreen ? "fixed top-0 left-0 w-full h-full" : "min-h-screen"
+        } p-2`}
       style={{ backgroundColor: "#D1399B" }}
     >
       <audio ref={audioRef} src="/sounds/win.mp3" preload="auto" />
       {/* Sidebar */}
       {showSidebar && (
-        <div className="fixed right-0 top-0 h-full w-64 bg-black shadow-lg p-4 flex flex-col space-y-4">
+        <div className="fixed right-0 top-0 h-full w-64 bg-black shadow-lg p-4 flex flex-col space-y-4 animate-slide-in">
           <h2 className="text-lg font-semibold text-white">Pengaturan</h2>
           <h2 className="text-lg font-semibold text-white">Daftar Nama</h2>
           <textarea
@@ -109,6 +130,12 @@ export default function Home() {
             />
             <span>Efek Suara Pemenang</span>
           </label>
+          <button
+            onClick={handleSave}
+            className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+          >
+            Save
+          </button>
           <button
             onClick={() => setShowSidebar(false)}
             className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
