@@ -128,7 +128,7 @@ export default function Home() {
           className="mb-1"
         />
 
-        <h1 className="text-2xl font-bold mb-2 text-white">Lucky Draw</h1>
+        <h1 className="text-2xl font-bold mb-2 text-white">Pemenangnya Adalah</h1>
 
         <div className="bg-white text-pink-600 px-6 py-3 rounded-lg shadow-md text-2xl font-semibold">
           {winner || "Winner ?"}
