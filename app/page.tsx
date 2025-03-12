@@ -8,31 +8,43 @@ export default function Home() {
   const [names, setNames] = useState("");
   const [winner, setWinner] = useState<string | null>(null);
   const [isRolling, setIsRolling] = useState(false);
-  const [speed, setSpeed] = useState(100);
+  const [speed, setSpeed] = useState(500);
   const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
   const [removeWinner, setRemoveWinner] = useState(false);
   const [soundEffect, setSoundEffect] = useState(true);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const spinAudioRef = useRef<HTMLAudioElement | null>(null);
 
   const nameList = names.split("\n").filter((name) => name.trim() !== "");
 
   useEffect(() => {
     if (isRolling && nameList.length > 0) {
+      if (spinAudioRef.current) {
+        spinAudioRef.current.loop = true;
+        spinAudioRef.current.play();
+      }
       let currentSpeed = speed;
       const id = setInterval(() => {
         const randomIndex = Math.floor(Math.random() * nameList.length);
         setWinner(nameList[randomIndex]);
       }, currentSpeed);
       setIntervalId(id);
-      return () => clearInterval(id);
+      return () => {
+        clearInterval(id);
+        if (spinAudioRef.current) {
+          spinAudioRef.current.pause();
+          spinAudioRef.current.currentTime = 0;
+          spinAudioRef.current.loop = false;
+        }
+      };
     }
   }, [isRolling, names, speed]);
 
   const handleStart = () => {
     if (!isRolling && nameList.length > 0) {
-      setSpeed(100);
+      setSpeed(10);
       setIsRolling(true);
     }
   };
@@ -89,8 +101,9 @@ export default function Home() {
       style={{ backgroundColor: "#D1399B" }}
     >
       <audio ref={audioRef} src="/sounds/win.mp3" preload="auto" />
+      <audio ref={spinAudioRef} src="/sounds/Casino Reward 20.wav" preload="auto" />
       {showSidebar && (
-        <div className="fixed right-0 top-0 h-full w-64 bg-black shadow-lg p-4 flex flex-col space-y-4 animate-slide-in">
+        <div className="fixed right-0 top-0 h-full w-768 bg-black shadow-lg p-4 flex flex-col space-y-4 animate-slide-in">
           <h2 className="text-lg font-semibold text-white">Pengaturan</h2>
           <h2 className="text-lg font-semibold text-white">Daftar Nama</h2>
           <textarea
