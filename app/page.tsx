@@ -13,32 +13,21 @@ export default function Home() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
   const [removeWinner, setRemoveWinner] = useState(false);
-  const [soundEffect, setSoundEffect] = useState(true);
+  const nameInputRef = useRef<HTMLTextAreaElement | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const spinAudioRef = useRef<HTMLAudioElement | null>(null);
-
+  const hasPlayedSound = useRef(false);
+  
   const nameList = names.split("\n").filter((name) => name.trim() !== "");
 
   useEffect(() => {
     if (isRolling && nameList.length > 0) {
-      if (spinAudioRef.current) {
-        spinAudioRef.current.loop = true;
-        spinAudioRef.current.play();
-      }
       let currentSpeed = speed;
       const id = setInterval(() => {
         const randomIndex = Math.floor(Math.random() * nameList.length);
         setWinner(nameList[randomIndex]);
       }, currentSpeed);
       setIntervalId(id);
-      return () => {
-        clearInterval(id);
-        if (spinAudioRef.current) {
-          spinAudioRef.current.pause();
-          spinAudioRef.current.currentTime = 0;
-          spinAudioRef.current.loop = false;
-        }
-      };
+      return () => clearInterval(id);
     }
   }, [isRolling, names, speed]);
 
@@ -46,22 +35,26 @@ export default function Home() {
     if (!isRolling && nameList.length > 0) {
       setSpeed(10);
       setIsRolling(true);
+      if (audioRef.current && !hasPlayedSound.current) {
+        audioRef.current.play();
+        hasPlayedSound.current = true;
+      }
     }
   };
 
   const handleStop = () => {
-    setIsRolling(false);
-    if (winner && removeWinner) {
-      setNames((prev) =>
-        prev
-          .split("\n")
-          .filter((name) => name !== winner)
-          .join("\n")
-      );
-    }
-    if (soundEffect && audioRef.current) {
-      audioRef.current.play();
-    }
+    setTimeout(() => {
+      setIsRolling(false);
+      if (winner && removeWinner) {
+        setNames((prev) =>
+          prev
+            .split("\n")
+            .filter((name) => name !== winner)
+            .join("\n")
+        );
+      }
+      hasPlayedSound.current = false; // Reset sound play state after stopping
+    }, 2000);
   };
 
   const toggleFullscreen = () => {
@@ -78,7 +71,10 @@ export default function Home() {
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      if (document.activeElement === nameInputRef.current) return;
+      
       if (event.code === "Space") {
+        event.preventDefault();
         if (isRolling) {
           handleStop();
         } else {
@@ -96,17 +92,14 @@ export default function Home() {
   };
 
   return (
-    <div
-      className={`flex ${isFullscreen ? "fixed top-0 left-0 w-full h-full" : "min-h-screen"} p-2`}
-      style={{ backgroundColor: "#D1399B" }}
-    >
-      <audio ref={audioRef} src="/sounds/win.mp3" preload="auto" />
-      <audio ref={spinAudioRef} src="/sounds/Casino Reward 20.wav" preload="auto" />
+    <div className={`flex ${isFullscreen ? "fixed top-0 left-0 w-full h-full" : "min-h-screen"} p-2`} style={{ backgroundColor: "#D1399B" }}>
+      <audio ref={audioRef} src="/sounds/Casino Reward 20.wav" />
       {showSidebar && (
         <div className="fixed right-0 top-0 h-full w-768 bg-black shadow-lg p-4 flex flex-col space-y-4 animate-slide-in">
           <h2 className="text-lg font-semibold text-white">Pengaturan</h2>
           <h2 className="text-lg font-semibold text-white">Daftar Nama</h2>
           <textarea
+            ref={nameInputRef}
             value={names}
             onChange={(e) => setNames(e.target.value)}
             className="px-4 py-3 border rounded-lg w-full text-black text-lg h-40"
@@ -115,10 +108,6 @@ export default function Home() {
           <label className="flex items-center space-x-2 text-white">
             <input type="checkbox" checked={removeWinner} onChange={() => setRemoveWinner(!removeWinner)} />
             <span>Hapus Nama Dari Daftar Undian</span>
-          </label>
-          <label className="flex items-center space-x-2 text-white">
-            <input type="checkbox" checked={soundEffect} onChange={() => setSoundEffect(!soundEffect)} />
-            <span>Efek Suara Pemenang</span>
           </label>
           <button onClick={handleSave} className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">
             Save
@@ -131,7 +120,7 @@ export default function Home() {
       <div className="flex flex-col items-center justify-center flex-grow">
         <Image src="/images/logo up 2.png" alt="Logo Undian" width={300} height={100} className="mb-1" />
         <h1 className="text-2xl font-bold mb-2 text-white">Pemenangnya Adalah</h1>
-        <div className="bg-white text-pink-600 px-6 py-3 rounded-lg shadow-md text-2xl font-semibold">
+        <div className="bg-white text-pink-600 px-6 py-3 rounded-lg shadow-md text-8xl font-semibold">
           {winner || "Winner ?"}
         </div>
         <div className="mt-6 flex space-x-4">
