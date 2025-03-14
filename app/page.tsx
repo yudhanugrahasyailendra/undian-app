@@ -119,7 +119,7 @@ export default function Home() {
           {winner || "Winner ?"}
         </div>
         <div className="mt-6 flex space-x-4">
-          <button onClick={handleToggle} className={`px-4 py-2 text-white rounded-lg ${isRolling ? "bg-red-500 hover:bg-red-600" : "bg-green-500 hover:bg-green-600"}`}>
+          <button onClick={handleToggle} className={`px-20 py-4 text-2xl text-white rounded-lg ${isRolling ? "bg-red-500 hover:bg-red-600" : "bg-green-500 hover:bg-green-600"}`}>
             {isRolling ? "Stop" : "Mulai"}
           </button>
         </div>
